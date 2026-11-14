@@ -68,14 +68,15 @@ class DevelopmentSettings(Settings):
     """Configuración para el entorno de desarrollo."""
     debug: bool = True
     # TODO: Agregar configuraciones específicas de desarrollo
-
+    debug: bool = True
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
 
 class TestingSettings(Settings):
     """Configuración para el entorno de pruebas."""
     # Usar una base de datos diferente para pruebas
     database_url: str = "sqlite:///./test_musica.db"
     # TODO: Agregar configuraciones específicas de pruebas
-
+    
 
 class ProductionSettings(Settings):
     """Configuración para el entorno de producción."""
