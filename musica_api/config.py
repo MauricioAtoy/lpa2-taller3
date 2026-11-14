@@ -83,8 +83,9 @@ class ProductionSettings(Settings):
     debug: bool = False
     # TODO: Agregar configuraciones específicas de producción
     # TODO: Cambiar a una base de datos más robusta (PostgreSQL, MySQL)
-    # database_url: str = "postgresql://user:password@localhost/musica_prod"
-
+    database_url: str = "postgresql://user:password@localhost/musica_prod"
+    debug: bool = True
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "WARNING"
 
 # Función para obtener la configuración según el entorno
 def get_settings() -> Settings:
@@ -102,10 +103,10 @@ def get_settings() -> Settings:
 
 
 # TODO: Opcional - Agregar validación de configuración al inicio
-# def validate_settings():
-#     """Valida que todas las configuraciones necesarias estén presentes."""
-#     required_settings = ["database_url", "app_name"]
-#     for setting in required_settings:
-#         if not getattr(settings, setting, None):
-#             raise ValueError(f"Configuración requerida no encontrada: {setting}")
+def validate_settings():
+    """Valida que todas las configuraciones necesarias estén presentes."""
+    required_settings = ["database_url", "app_name"]
+    for setting in required_settings:
+        if not getattr(settings, setting, None):
+            raise ValueError(f"Configuración requerida no encontrada: {setting}")
 
