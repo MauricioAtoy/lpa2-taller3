@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # TODO: Configuración de logging
-    # log_level: str = "INFO"
+    log_level: str = "INFO"
     
     class Config:
         """
