@@ -12,7 +12,9 @@ from main import app
 from app.database import get_session
 from app.models import Usuario, Cancion, Favorito
 
-
+OK_CREADO = (200, 201)
+OK_BORRADO = (200, 204)
+ERROR_DUPLICADO = (400, 409)
 # =============================================================================
 # CONFIGURACIÓN DE FIXTURES
 # =============================================================================
@@ -24,13 +26,14 @@ def session_fixture():
     Crea una sesión de base de datos en memoria para cada test.
     Se limpia automáticamente después de cada test.
     """
-    # TODO: Crear engine en memoria (SQLite)
-    
-    # TODO: Crear todas las tablas
-    
-    # TODO: Crear sesión
-
-    pass
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
 
 
 # Fixture para cliente de pruebas
