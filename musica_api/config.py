@@ -52,11 +52,11 @@ class Settings(BaseSettings):
         case_sensitive = False
         
         # TODO: Opcional - Agregar validación personalizada
-        # @validator("database_url")
-        # def validate_database_url(cls, v):
-        #     if not v:
-        #         raise ValueError("DATABASE_URL no puede estar vacío")
-        #     return v
+        @validator("database_url")
+        def validate_database_url(cls, v):
+            if not v:
+                raise ValueError("DATABASE_URL no puede estar vacío")
+            return v
 
 
 # Crear una instancia global de Settings
