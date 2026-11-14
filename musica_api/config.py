@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
     
     # TODO: Configuración de seguridad (para futuras mejoras)
-    # secret_key: str = "your-secret-key-here"  # Cambiar en producción
-    # algorithm: str = "HS256"
-    # access_token_expire_minutes: int = 30
+    secret_key: str = "your-secret-key-here"  # Cambiar en producción
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
     
     # TODO: Configuración de logging
     # log_level: str = "INFO"
