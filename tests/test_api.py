@@ -167,44 +167,68 @@ class TestCancions:
     # TODO: Test para listar cancións
     def test_listar_cancions(self, client: TestClient):
         """Test para GET /api/cancions"""
-
-        pass
+        response = client.get("/api/canciones")
+        assert response.status_code == 200
+        assert len(response.json()) == 1
     
     # TODO: Test para crear canción
     def test_crear_cancion(self, client: TestClient):
         """Test para POST /api/cancions"""
-
-        pass
+        response = client.post("/api/canciones", json=datos_cancion())
+        assert response.status_code in OK_CREADO
+        data = response.json()
+        assert data["titulo"] == "Nueva Canción"
+        assert data["año"] == 2021
+        assert "id" in data
     
     # TODO: Test para obtener canción por ID
     def test_obtener_cancion(self, client: TestClient, cancion_test: Cancion):
         """Test para GET /api/cancions/{id}"""
-
-        pass
+        response = client.get(f"/api/canciones/{cancion_test.id}")
+        assert response.status_code == 200
+        assert response.json()["titulo"] == "Canción Test"
     
     # TODO: Test para actualizar canción
     def test_actualizar_cancion(self, client: TestClient, cancion_test: Cancion):
         """Test para PUT /api/cancions/{id}"""
-
-        pass
+        response = client.put(
+            f"/api/canciones/{cancion_test.id}",
+            json=datos_cancion(titulo="Título Actualizado"),
+        )
+        assert response.status_code == 200
+        assert response.json()["titulo"] == "Título Actualizado"
     
     # TODO: Test para eliminar canción
     def test_eliminar_cancion(self, client: TestClient, cancion_test: Cancion):
         """Test para DELETE /api/cancions/{id}"""
-
-        pass
+        response = client.delete(f"/api/canciones/{cancion_test.id}")
+        assert response.status_code in OK_BORRADO
+        assert client.get(f"/api/canciones/{cancion_test.id}").status_code == 404
     
     # TODO: Test para buscar cancións
     def test_buscar_cancions(self, client: TestClient, cancion_test: Cancion):
         """Test para GET /api/cancions/buscar"""
-
-        pass
+        response = client.get("/api/canciones/buscar", params={"genero": "Rock"})
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["titulo"] == "Canción Test"
     
     # TODO: Test para buscar cancións con múltiples filtros
     def test_buscar_cancions_multiples_filtros(self, client: TestClient):
         """Test para búsqueda con múltiples parámetros"""
-
-        pass
+        client.post(
+            "/api/canciones",
+            json=datos_cancion(artista="Artista Test", genero="Pop"),
+        )
+        response = client.get(
+            "/api/canciones/buscar",
+            params={"artista": "Artista Test", "genero": "Rock"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["genero"] == "Rock"
 
 
 # =============================================================================
