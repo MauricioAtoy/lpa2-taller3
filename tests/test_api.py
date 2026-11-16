@@ -42,9 +42,13 @@ def client_fixture(session: Session):
     """
     Crea un cliente de pruebas de FastAPI con la sesión de test.
     """
-    # TODO: Override de la dependencia get_session
-    
-    pass
+    def get_session_override():
+        return session
+
+    app.dependency_overrides[get_session] = get_session_override
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
 
 
 # TODO: Fixture para crear usuarios de prueba
@@ -53,8 +57,11 @@ def usuario_test_fixture(session: Session):
     """
     Crea un usuario de prueba en la base de datos.
     """
-  
-    pass
+    usuario = Usuario(nombre="Usuario Test", correo="test@example.com")
+    session.add(usuario)
+    session.commit()
+    session.refresh(usuario)
+    return usuario
 
 
 # TODO: Fixture para crear canciones de prueba
@@ -63,20 +70,20 @@ def cancion_test_fixture(session: Session):
     """
     Crea una cancion de prueba en la base de datos.
     """
-    # cancion = Cancion(
-    #     titulo="canción Test",
-    #     director="Director Test",
-    #     genero="Drama",
-    #     duracion=120,
-    #     año=2020,
-    #     clasificacion="PG-13",
-    #     sinopsis="Una canción de prueba"
-    # )
-    # session.add(cancion)
-    # session.commit()
-    # session.refresh(cancion)
-    # return cancion
-    pass
+    cancion = Cancion(
+        titulo="canción Test",
+        director="Director Test",
+        genero="Drama",
+        duracion=120,
+        año=2020,
+        clasificacion="PG-13",
+        sinopsis="Una canción de prueba"
+    )
+    session.add(cancion)
+    session.commit()
+    session.refresh(cancion)
+    return cancion
+
 
 
 # =============================================================================
@@ -89,44 +96,65 @@ class TestUsuarios:
     # TODO: Test para listar usuarios
     def test_listar_usuarios(self, client: TestClient):
         """Test para GET /api/usuarios"""
-
-        pass
+        response = client.get("/api/usuarios")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["correo"] == "test@example.com"
     
     # TODO: Test para crear usuario
     def test_crear_usuario(self, client: TestClient):
         """Test para POST /api/usuarios"""
-
-        pass
+        response = client.post(
+            "/api/usuarios",
+            json={"nombre": "Ana", "correo": "ana@example.com"},
+        )
+        assert response.status_code in OK_CREADO
+        data = response.json()
+        assert data["nombre"] == "Ana"
+        assert data["correo"] == "ana@example.com"
+        assert "id" in data
     
     # TODO: Test para crear usuario con correo duplicado
     def test_crear_usuario_correo_duplicado(self, client: TestClient, usuario_test: Usuario):
         """Test para verificar que no se permiten correos duplicados"""
-
-        pass
+        response = client.post(
+            "/api/usuarios",
+            json={"nombre": "Otro", "correo": usuario_test.correo},
+        )
+        assert response.status_code in ERROR_DUPLICADO
     
     # TODO: Test para obtener usuario por ID
     def test_obtener_usuario(self, client: TestClient, usuario_test: Usuario):
         """Test para GET /api/usuarios/{id}"""
-
-        pass
+        response = client.get(f"/api/usuarios/{usuario_test.id}")
+        assert response.status_code == 200
+        assert response.json()["nombre"] == "Usuario Test"
     
     # TODO: Test para obtener usuario inexistente
     def test_obtener_usuario_no_existe(self, client: TestClient):
         """Test para verificar error 404 con usuario inexistente"""
-
-        pass
+        response = client.get("/api/usuarios/9999")
+        assert response.status_code == 404
     
     # TODO: Test para actualizar usuario
     def test_actualizar_usuario(self, client: TestClient, usuario_test: Usuario):
         """Test para PUT /api/usuarios/{id}"""
-
-        pass
+        response = client.put(
+            f"/api/usuarios/{usuario_test.id}",
+            json={"nombre": "Nombre Nuevo", "correo": "nuevo@example.com"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["nombre"] == "Nombre Nuevo"
+        assert data["correo"] == "nuevo@example.com"
     
     # TODO: Test para eliminar usuario
     def test_eliminar_usuario(self, client: TestClient, usuario_test: Usuario):
         """Test para DELETE /api/usuarios/{id}"""
-
-        pass
+        response = client.delete(f"/api/usuarios/{usuario_test.id}")
+        assert response.status_code in OK_BORRADO
+        assert client.get(f"/api/usuarios/{usuario_test.id}").status_code == 404
 
 
 # =============================================================================
