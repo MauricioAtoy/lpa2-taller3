@@ -284,8 +284,14 @@ class TestFavoritos:
         cancion_test: Cancion
     ):
         """Test para DELETE /api/favoritos/{id}"""
+        favorito = Favorito(id_usuario=usuario_test.id, id_cancion=cancion_test.id)
+        session.add(favorito)
+        session.commit()
+        session.refresh(favorito)
+        response = client.delete(f"/api/favoritos/{favorito.id}")
+        assert response.status_code in OK_BORRADO
+        assert client.get(f"/api/favoritos/{favorito.id}").status_code == 404        
 
-        pass
     
     # TODO: Test para marcar favorito desde usuario
     def test_marcar_favorito_usuario(
@@ -295,8 +301,10 @@ class TestFavoritos:
         cancion_test: Cancion
     ):
         """Test para POST /api/usuarios/{id}/favoritos/{id_cancion}"""
-
-        pass
+        response = client.post(
+            f"/api/usuarios/{usuario_test.id}/favoritos/{cancion_test.id}"
+        )
+        assert response.status_code in OK_CREADO
     
     # TODO: Test para listar favoritos de usuario
     def test_listar_favoritos_usuario(
@@ -307,8 +315,12 @@ class TestFavoritos:
         cancion_test: Cancion
     ):
         """Test para GET /api/usuarios/{id}/favoritos"""
+        session.add(Favorito(id_usuario=usuario_test.id, id_cancion=cancion_test.id))
+        session.commit()
 
-        pass
+        response = client.get(f"/api/usuarios/{usuario_test.id}/favoritos")
+        assert response.status_code == 200
+        assert len(response.json()) == 1
 
 
 # =============================================================================
@@ -322,15 +334,28 @@ class TestIntegracion:
     def test_flujo_completo(self, client: TestClient):
         """Test que verifica el flujo completo de la aplicación"""
         # 1. Crear usuario
-
+        r_usuario = client.post(        
+            "/api/usuarios",
+            json={"nombre": "Flujo", "correo": "flujo@example.com"},
+        )
+        assert r_usuario.status_code in OK_CREADO
+        id_usuario = r_usuario.json()["id"]
         # 2. Crear canción
+        r_cancion = client.post("/api/canciones", json=datos_cancion())
+        assert r_cancion.status_code in OK_CREADO
+        id_cancion = r_cancion.json()["id"]
 
         # 3. Marcar como favorito
-
+        r_fav = client.post(f"/api/usuarios/{id_usuario}/favoritos/{id_cancion}")
+        assert r_fav.status_code in OK_CREADO
+        
         # 4. Verificar que aparece en favoritos del usuario
-
-        pass
-
+        r_lista = client.get(f"/api/usuarios/{id_usuario}/favoritos")
+        assert r_lista.status_code == 200
+        favoritos = r_lista.json()
+        assert len(favoritos) == 1
+        assert favoritos[0]["id_cancion"] == id_cancion
+        
 
 # =============================================================================
 # TESTS DE VALIDACIÓN
