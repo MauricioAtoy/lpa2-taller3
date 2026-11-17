@@ -2,8 +2,9 @@
 Configuración de la aplicación.
 Maneja diferentes entornos: desarrollo, pruebas y producción.
 """
+from typing import Literal
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Literal
 
 
@@ -47,16 +48,15 @@ class Settings(BaseSettings):
         """
         Configuración de Pydantic Settings.
         """
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+        model_config = SettingsConfigDict(
+            env_file=".env",
+            env_file_encoding="utf-8",
+            case_sensitive=False,
+            extra="ignore",
+        )
         
         # TODO: Opcional - Agregar validación personalizada
-        @validator("database_url")
-        def validate_database_url(cls, v):
-            if not v:
-                raise ValueError("DATABASE_URL no puede estar vacío")
-            return v
+
 
 
 # Crear una instancia global de Settings
@@ -75,7 +75,7 @@ class TestingSettings(Settings):
     """Configuración para el entorno de pruebas."""
     # Usar una base de datos diferente para pruebas
     database_url: str = "sqlite:///./test_musica.db"
-    # TODO: Agregar configuraciones específicas de pruebas
+    # Agregar configuraciones específicas de pruebas
     
 
 class ProductionSettings(Settings):
