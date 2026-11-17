@@ -367,19 +367,21 @@ class TestValidacion:
     # TODO: Test para validar email inválido
     def test_email_invalido(self, client: TestClient):
         """Test para verificar validación de email"""
-
-        pass
+        response = client.post(
+            "/api/usuarios",
+            json={"nombre": "Mal Correo", "correo": "esto-no-es-un-correo"},
+        )
+        assert response.status_code == 422
     
     # TODO: Test para validar año de canción
     def test_año_cancion_invalido(self, client: TestClient):
         """Test para verificar validación de año"""
-
-        pass
+        response = client.post("/api/canciones", json=datos_cancion(año=3000))
+        assert response.status_code == 422
     
     # TODO: Test para validar campos requeridos
     def test_campos_requeridos(self, client: TestClient):
         """Test para verificar que los campos requeridos son obligatorios"""
-
-        pass
-
+        assert client.post("/api/usuarios", json={}).status_code == 422
+        assert client.post("/api/canciones", json={}).status_code == 422
 
