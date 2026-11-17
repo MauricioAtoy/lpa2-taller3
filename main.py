@@ -1,12 +1,19 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import logging
+import platform
+import time
 from contextlib import asynccontextmanager
 
-from app.database import create_db_and_tables
-from app.routers import usuarios, peliculas, favoritos
+import uvicorn
+from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlmodel import Session
 
-# TODO: Importar la configuración desde app.config
-
+from musica_api.config import get_settings
+from musica_api.database import create_db_and_tables, get_session
+from musica_api.routers import canciones, favoritos, usuarios
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
