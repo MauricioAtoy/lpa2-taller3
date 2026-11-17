@@ -95,9 +95,7 @@ def eliminar_usuario(usuario_id: int, session: SessionDep):
 @router.get("/{usuario_id}/favoritos", response_model=list[FavoritoRead])
 def listar_favoritos_usuario(usuario_id: int, session: SessionDep):
     _obtener_usuario(session, usuario_id)
-    return session.exec(
-        select(Favorito).where(Favorito.id_usuario == usuario_id)
-    ).all()
+    return session.exec(select(Favorito).where(Favorito.id_usuario == usuario_id)).all()
 
 
 @router.post(

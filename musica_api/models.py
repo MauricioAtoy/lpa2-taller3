@@ -2,16 +2,17 @@
 Modelos de la base de datos (SQLModel) y esquemas de validación (Pydantic).
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from pydantic import field_validator
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
 from utils import validar_año, validar_correo
 
+
 def ahora() -> datetime:
     """Fecha y hora actual con zona horaria (UTC)."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # =============================================================================
