@@ -4,6 +4,7 @@ Contiene funciones auxiliares utilizadas en diferentes partes de la aplicación.
 """
 import re
 from datetime import datetime
+import unicodedata
 
 def validar_correo(correo):
     """
@@ -15,8 +16,8 @@ def validar_correo(correo):
     Returns:
         bool: True si el correo es válido, False en caso contrario
     """
-    # TODO: crear la expresión regular para validar el correo
-    patron = ""
+    # crear la expresión regular para validar el correo
+    patron = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$"
     return bool(re.match(patron, correo))
 
 def formatear_duracion(segundos):
@@ -29,8 +30,12 @@ def formatear_duracion(segundos):
     Returns:
         str: Duración formateada como mm:ss
     """
-    # TODO: pendiente de implementar
-    pass 
+    # pendiente de implementar
+    segundos = int(segundos)
+    if segundos < 0:
+        raise ValueError("La duración no puede ser negativa")
+    minutos, resto = divmod(segundos, 60)
+    return f"{minutos:02d}:{resto:02d}"
 
 def generar_slug(texto):
     """
@@ -43,17 +48,25 @@ def generar_slug(texto):
     Returns:
         str: Slug generado
     """
-    # TODO: Convertir a minúsculas
-    slug = texto
-    
-    # TODO: Reemplazar espacios con guiones
-    
-    # TODO: Eliminar caracteres no alfanuméricos (excepto guiones)
-    
-    # TODO: Reemplazar múltiples guiones con uno solo
-    
-    # TODO: Eliminar guiones al inicio y final
-    
+    # Convertir a minúsculas
+    slug = texto.lower()
+
+    # Quitar tildes (canción -> cancion) para no perder letras en el paso siguiente
+    slug = unicodedata.normalize("NFKD", slug)
+    slug = "".join(c for c in slug if not unicodedata.combining(c))
+
+    # Reemplazar espacios con guiones
+    slug = re.sub(r"\s+", "-", slug)
+
+    # Eliminar caracteres no alfanuméricos (excepto guiones)
+    slug = re.sub(r"[^a-z0-9-]", "", slug)
+
+    # Reemplazar múltiples guiones con uno solo
+    slug = re.sub(r"-{2,}", "-", slug)
+
+    # Eliminar guiones al inicio y final
+    slug = slug.strip("-")
+
     return slug
 
 def obtener_año_actual():
@@ -63,8 +76,8 @@ def obtener_año_actual():
     Returns:
         int: Año actual
     """
-    # TODO: pendiente por implementar
-    return ""
+    # pendiente por implementar
+    return datetime.now().year
 
 def validar_año(año):
     """
