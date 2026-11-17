@@ -15,6 +15,16 @@ from musica_api.config import get_settings
 from musica_api.database import create_db_and_tables, get_session
 from musica_api.routers import canciones, favoritos, usuarios
 
+try:
+    import resource  # Solo disponible en Linux/macOS (WSL incluido)
+except ImportError:
+    resource = None
+
+settings = get_settings()
+logger = logging.getLogger("musica_api")
+logging.basicConfig(level=settings.log_level)
+START_TIME = time.time()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -37,8 +47,16 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     # TODO: Agregar información de contacto y licencia
-
+    contact={
+        "name": "Tu Nombre",  # Ajusta con tus datos
+        "email": "tu.correo@ejemplo.com",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
+
 
 
 # Configurar CORS para permitir solicitudes desde diferentes orígenes
@@ -55,7 +73,9 @@ app.add_middleware(
 # TODO: Incluir los routers de usuarios, canciones y favoritos
 # Ejemplo:
 # app.include_router(usuarios.router, prefix="/api/usuarios", tags=["Usuarios"])
-
+app.include_router(usuarios.router, prefix="/api/usuarios", tags=["Usuarios"])
+app.include_router(canciones.router, prefix="/api/canciones", tags=["Canciones"])
+app.include_router(favoritos.router, prefix="/api/favoritos", tags=["Favoritos"])
 
 # Crear un endpoint raíz que retorne información básica de la API
 @app.get("/", tags=["Root"])
@@ -66,6 +86,12 @@ async def root():
     """
     return {
         # TODO: Agregar información 
+        "nombre": settings.app_name,
+        "version": settings.app_version,
+        "entorno": settings.environment,
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "health": "/health",        
     }
 
 
@@ -76,10 +102,25 @@ async def health_check():
     Health check endpoint para verificar el estado de la API.
     Útil para sistemas de monitoreo y orquestación.
     """
+    try:
+        session.execute(text("SELECT 1"))
+        base_de_datos = "connected"
+    except SQLAlchemyError:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "database": "disconnected"},
+        )
     return {
         "status": "healthy",
         # TODO: Agregar verificación de conexión a base de datos
         # TODO: Agregar información sobre el sistema (uptime, memoria, etc.)
+        "database": base_de_datos,
+        "sistema": {
+            "uptime_segundos": round(time.time() - START_TIME),
+            "memoria_mb": _memoria_mb(),
+            "python": platform.python_version(),
+            "plataforma": platform.system(),
+        },        
     }
 
 
@@ -93,7 +134,11 @@ if __name__ == "__main__":
     import uvicorn
     
     uvicorn.run(
-        # TODO: Configurar el servidor uvicorn con los parámetros apropiados
+                "main:app",
+        host=settings.host,
+        port=settings.port,
+        reload=settings.debug,
+        log_level=settings.log_level.lower(),
     )
 
 
