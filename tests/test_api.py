@@ -241,8 +241,9 @@ class TestFavoritos:
     # TODO: Test para listar favoritos
     def test_listar_favoritos(self, client: TestClient):
         """Test para GET /api/favoritos"""
-
-        pass
+        response = client.get("/api/favoritos")
+        assert response.status_code == 200
+        assert response.json() == []
     
     # TODO: Test para crear favorito
     def test_crear_favorito(
@@ -252,8 +253,14 @@ class TestFavoritos:
         cancion_test: Cancion
     ):
         """Test para POST /api/favoritos"""
-
-        pass
+        response = client.post(
+            "/api/favoritos",
+            json={"id_usuario": usuario_test.id, "id_cancion": cancion_test.id},
+        )
+        assert response.status_code in OK_CREADO
+        data = response.json()
+        assert data["id_usuario"] == usuario_test.id
+        assert data["id_cancion"] == cancion_test.id
     
     # TODO: Test para crear favorito duplicado
     def test_crear_favorito_duplicado(
@@ -263,8 +270,10 @@ class TestFavoritos:
         cancion_test: Cancion
     ):
         """Test para verificar que no se permiten favoritos duplicados"""
-
-        pass
+        payload = {"id_usuario": usuario_test.id, "id_cancion": cancion_test.id}
+        client.post("/api/favoritos", json=payload)
+        response = client.post("/api/favoritos", json=payload)
+        assert response.status_code in ERROR_DUPLICADO
     
     # TODO: Test para eliminar favorito
     def test_eliminar_favorito(
